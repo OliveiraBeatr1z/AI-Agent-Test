@@ -1,16 +1,25 @@
-import { GoogleGenAI } from "@google/genai";
+import 'dotenv/config';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { fazerPergunta } from './pergunta.js';
 
-const ai = new GoogleGenAI({});
+// Access your API key as an environment variable (see "Set up your API key" above)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-async function main() {
-  const response = await ai.models.generateContentStream({
-    model: "gemini-2.5-flash",
-    contents: "Me fale sobre a alemanha em portugues",
-  });
+async function run() {
+  // For text-only input, use the gemini-pro model
+  const model = genAI.getGenerativeModel({ model: "gemini-pro"});
 
-  for await (const chunk of response) {
-    console.log(chunk.text);
-  }
+  let prompt = "Você é um site de viagens e deve responder somente sobre esse assunto" +
+  " Caso o usuário pergunte sobre algo diferente, diga que não pode responder. " +
+  " O usuário escolheu: ";
+  prompt += await fazerPergunta("Me fale sobre o destino que deseja conhecer: ");
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+  console.log(text);
 }
 
-await main();
+run();
+
+AIzaSyCWwaS8jyszminESeH3nYZCcdeRe8lPiOI
